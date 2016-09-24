@@ -36,11 +36,31 @@ public class OMDbAPI {
         return null;
     }
 
-    public Movie getById() {
+    public Movie getMovie(String imdbId) {
+        try {
+            URL url = new URL(BASE_URL + "?i=" + imdbId);
+            Log.d("Opening url", url.toString());
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(url, Movie.class);
+        } catch (MalformedURLException e) {
+            System.err.println(e);
+        } catch (IOException e) {
+            System.err.println(e);
+        }
         return null;
     }
 
-    public Movie getByTitle() {
+    public MovieFull getMovieFull(String imdbId) {
+        try {
+            URL url = new URL(BASE_URL + "?i=" + imdbId + "&plot=full");
+            Log.d("Opening url", url.toString());
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(url, MovieFull.class);
+        } catch (MalformedURLException e) {
+            System.err.println(e);
+        } catch (IOException e) {
+            System.err.println(e);
+        }
         return null;
     }
 
@@ -50,11 +70,11 @@ public class OMDbAPI {
         url += "?s=" + query;
 
         if (type != null) {
-            url += "?type=" + type;
+            url += "&type=" + type;
         }
 
         if (year != null) {
-            url += "?y=" + year;
+            url += "&y=" + year;
         }
 
         return url;

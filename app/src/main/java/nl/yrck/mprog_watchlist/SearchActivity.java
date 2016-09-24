@@ -4,9 +4,12 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -18,9 +21,9 @@ import java.util.ArrayList;
 
 import nl.yrck.mprog_watchlist.api.Movie;
 import nl.yrck.mprog_watchlist.api.MovieSearchResult;
-import nl.yrck.mprog_watchlist.api.OMDbAPI;
+import nl.yrck.mprog_watchlist.loaders.SearchLoader;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieSearchResult> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,16 +32,11 @@ public class SearchActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Log.d("test", "test");
-
         handleIntent(getIntent());
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
         ArrayList<Movie> movies = new ArrayList<>();
-        movies.add(new Movie("title", "title", "title", "title", "title"));
-        movies.add(new Movie("title", "title", "title", "title", "title"));
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -57,11 +55,23 @@ public class SearchActivity extends AppCompatActivity {
 
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            Search search = new Search();
-            Log.d("Search query", query);
-            search.execute(query);
+            String searchQuery = intent.getStringExtra(SearchManager.QUERY);
+            Bundle bundle = new Bundle();
+            bundle.putString("SEARCH_QUERY", searchQuery);
+            getSupportLoaderManager().restartLoader(0, bundle, this);
         }
+    }
+
+    private void showError(String error) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        Log.e("Search", "Error: " + error);
+        builder.setMessage(error)
+                .setTitle("Search Error")
+                .setCancelable(true)
+                .setNeutralButton("Dismiss", (dialog, which) -> dialog.dismiss());
+        AlertDialog dialog = builder.create();
+        dialog.dismiss();
+        dialog.show();
     }
 
     @Override
@@ -77,25 +87,25 @@ public class SearchActivity extends AppCompatActivity {
         return true;
     }
 
-    private class Search extends AsyncTask<String, Void, MovieSearchResult> {
+    @Override
+    public Loader<MovieSearchResult> onCreateLoader(int id, Bundle args) {
+        String searchQuery = args.getString("SEARCH_QUERY");
+        return new SearchLoader(this, searchQuery);
+    }
 
-        @Override
-        protected MovieSearchResult doInBackground(String[] params) {
-            OMDbAPI omDbAPI = new OMDbAPI();
-            MovieSearchResult movieSearchResult = omDbAPI.Search(params[0], null, null);
-            for (Movie movie : movieSearchResult.getMovies()) {
-                Log.e("lls", "" + movie.getTitle());
-            }
-            return movieSearchResult;
-        }
-
-        @Override
-        protected void onPostExecute(MovieSearchResult movieSearchResult) {
+    @Override
+    public void onLoadFinished(Loader<MovieSearchResult> loader, MovieSearchResult data) {
+        if (data.response()) {
             RecyclerMovieFragment recyclerMovieFragment = (RecyclerMovieFragment) getFragmentManager()
                     .findFragmentByTag(RecyclerMovieFragment.TAG);
-            recyclerMovieFragment.refreshData(movieSearchResult.getMovies());
-
-            super.onPostExecute(movieSearchResult);
+            recyclerMovieFragment.refreshData(data.getMovies());
+        } else {
+            showError(data.getError());
         }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<MovieSearchResult> loader) {
+        Log.d("searchactivty", "loader reset");
     }
 }

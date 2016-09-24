@@ -11,33 +11,34 @@ import java.util.List;
 public class MovieSearchResult {
     private List<Movie> movies;
     private int totalResults;
+    private boolean response;
+    private String error;
 
     @JsonCreator
     MovieSearchResult(
             @JsonProperty("Search") List<Movie> movies,
-            @JsonProperty("totalResults") int totalResults) {
+            @JsonProperty("totalResults") int totalResults,
+            @JsonProperty("Response") boolean response,
+            @JsonProperty("Error") String error) {
         this.movies = movies;
         this.totalResults = totalResults;
+        this.response = response;
+        this.error = error;
     }
-
-//    public MovieSearchResult(List<Movie> movies, int totalResults) {
-//        this.movies = movies;
-//        this.totalResults = totalResults;
-//    }
 
     public List<Movie> getMovies() {
         return movies;
-    }
-
-    public void setMovies(List<Movie> movies) {
-        this.movies = movies;
     }
 
     public int getTotalResults() {
         return totalResults;
     }
 
-    public void setTotalResults(int totalResults) {
-        this.totalResults = totalResults;
+    public boolean response() {
+        return response;
+    }
+
+    public String getError() {
+        return error;
     }
 }

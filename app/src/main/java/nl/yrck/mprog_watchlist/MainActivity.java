@@ -5,19 +5,26 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import nl.yrck.mprog_watchlist.api.Movie;
+import nl.yrck.mprog_watchlist.loaders.MoviesLoader;
+import nl.yrck.mprog_watchlist.storage.MovieIdSave;
+import nl.yrck.mprog_watchlist.storage.MovieIdSharedPreference;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Movie>> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,15 +34,9 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startSearchActivity();
-            }
-        });
+        fab.setOnClickListener((View view) -> startSearchActivity());
 
         ArrayList<Movie> movies = new ArrayList<>();
-        movies.add(new Movie("title", "title", "title", "title", "title"));
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -45,13 +46,25 @@ public class MainActivity extends AppCompatActivity {
         recyclerMovieFragment.setArguments(bundle);
         fragmentTransaction.add(R.id.fragment, recyclerMovieFragment, RecyclerMovieFragment.TAG);
         fragmentTransaction.commit();
+
+        getMovies();
+    }
+
+    private void getMovies() {
+        MovieIdSave movieIdSave = new MovieIdSharedPreference(this);
+        Set<String> set = movieIdSave.getMovieIds();
+        Log.d("MAIN movies set saved", "size " + set.size());
+        String[] movie_ids = set.toArray(new String[set.size()]);
+        Log.d("movies saved", "length " + movie_ids.length);
+        Bundle bundle = new Bundle();
+        bundle.putStringArray("MOVIE_ID_S", movie_ids);
+        getSupportLoaderManager().restartLoader(0, bundle, this);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-
 
         return true;
     }
@@ -64,10 +77,15 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        } else if (id == R.id.action_search) {
-            return true;
+        if (id == R.id.action_about) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("By Yorick de Boer")
+                    .setTitle("About")
+                    .setCancelable(true)
+                    .setNeutralButton("Dismiss", (dialog, which) -> dialog.dismiss());
+            AlertDialog dialog = builder.create();
+            dialog.dismiss();
+            dialog.show();
         }
 
         return super.onOptionsItemSelected(item);
@@ -76,5 +94,23 @@ public class MainActivity extends AppCompatActivity {
     private void startSearchActivity() {
         Intent intent = new Intent(this, SearchActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    public Loader<List<Movie>> onCreateLoader(int id, Bundle args) {
+        String[] movie_id_s = args.getStringArray("MOVIE_ID_S");
+        return new MoviesLoader(this, movie_id_s);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<Movie>> loader, List<Movie> data) {
+        RecyclerMovieFragment recyclerMovieFragment = (RecyclerMovieFragment) getFragmentManager()
+                .findFragmentByTag(RecyclerMovieFragment.TAG);
+        recyclerMovieFragment.refreshData(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<Movie>> loader) {
+        Log.d("searchactivty", "loader reset");
     }
 }

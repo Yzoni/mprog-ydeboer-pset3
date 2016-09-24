@@ -19,11 +19,18 @@ import nl.yrck.mprog_watchlist.api.Movie;
 class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
     private List<Movie> movies;
     private Context context;
+    private static ClickListener clickListener;
+
+    // Provide a suitable constructor (depends on the kind of dataset)
+    RecyclerAdapter(List<Movie> myDataset, Context myContext) {
+        movies = myDataset;
+        context = myContext;
+    }
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // each data item is just a string in this case
         ImageView cardPoster;
         TextView cardTitle;
@@ -34,13 +41,18 @@ class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
             cardPoster = (ImageView) v.findViewById(R.id.card_poster);
             cardTitle = (TextView) v.findViewById(R.id.card_title);
             cardYear = (TextView) v.findViewById(R.id.card_year);
+
+            v.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            clickListener.onItemClick(getAdapterPosition(), v);
         }
     }
 
-    // Provide a suitable constructor (depends on the kind of dataset)
-    RecyclerAdapter(List<Movie> myDataset, Context myContext) {
-        movies = myDataset;
-        context = myContext;
+    public void setOnItemClickListener(ClickListener clickListener) {
+        RecyclerAdapter.clickListener = clickListener;
     }
 
     // Create new views (invoked by the layout manager)
@@ -60,16 +72,24 @@ class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        Picasso.with(context).load(movies.get(position).getPoster()).into(holder.cardPoster);
 
-        holder.cardTitle.setText(movies.get(position).getTitle());
-        holder.cardYear.setText(movies.get(position).getYear());
+        Movie movie = movies.get(position);
 
+        Picasso.with(context).load(movie.getPoster()).into(holder.cardPoster);
+
+        holder.cardTitle.setText(movie.getTitle());
+        holder.cardYear.setText(movie.getYear());
+
+        holder.itemView.setTag(movie.getImdbID());
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return movies.size();
+    }
+
+    public interface ClickListener {
+        void onItemClick(int position, View v);
     }
 }
