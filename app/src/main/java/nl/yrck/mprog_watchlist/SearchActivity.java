@@ -25,6 +25,8 @@ import nl.yrck.mprog_watchlist.loaders.SearchLoader;
 
 public class SearchActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieSearchResult> {
 
+    ArrayList<Movie> movies;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,8 +38,16 @@ public class SearchActivity extends AppCompatActivity implements LoaderManager.L
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        ArrayList<Movie> movies = new ArrayList<>();
+        if (savedInstanceState != null) {
+            movies = savedInstanceState.getParcelableArrayList("MOVIES");
+            initFragment(false);
+        } else {
+            movies = new ArrayList<>();
+            initFragment(true);
+        }
+    }
 
+    private void initFragment(boolean progressbar) {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         RecyclerMovieFragment recyclerMovieFragment = new RecyclerMovieFragment();
@@ -46,6 +56,12 @@ public class SearchActivity extends AppCompatActivity implements LoaderManager.L
         recyclerMovieFragment.setArguments(bundle);
         fragmentTransaction.add(R.id.fragment, recyclerMovieFragment, RecyclerMovieFragment.TAG);
         fragmentTransaction.commit();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("MOVIES", movies);
+        super.onSaveInstanceState(outState);
     }
 
     @Override

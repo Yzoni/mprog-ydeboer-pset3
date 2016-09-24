@@ -58,7 +58,7 @@ public class RecyclerMovieFragment extends Fragment {
         if (getArguments().getBoolean("SHOW_PROGRESSBAR")) {
             showProgressbar();
         }
-        
+
         return rootView;
     }
 

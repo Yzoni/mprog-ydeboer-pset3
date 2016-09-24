@@ -26,6 +26,8 @@ import nl.yrck.mprog_watchlist.storage.MovieIdSharedPreference;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Movie>> {
 
+    ArrayList<Movie> movies;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,26 +38,30 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener((View view) -> startSearchActivity());
 
-
-        initFragment();
-
-        getMovies();
+        if (savedInstanceState != null) {
+            movies = savedInstanceState.getParcelableArrayList("MOVIES");
+            initFragment(false);
+        } else {
+            movies = new ArrayList<>();
+            initFragment(true);
+            getMovies();
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("MOVIES", movies);
         super.onSaveInstanceState(outState);
     }
 
-    private void initFragment() {
+    private void initFragment(boolean progressbar) {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         RecyclerMovieFragment recyclerMovieFragment = new RecyclerMovieFragment();
 
-        ArrayList<Movie> movies = new ArrayList<>();
         Bundle bundle = new Bundle();
         bundle.putParcelableArrayList("MOVIES", movies);
-        bundle.putBoolean("SHOW_PROGRESSBAR", true);
+        bundle.putBoolean("SHOW_PROGRESSBAR", progressbar);
         recyclerMovieFragment.setArguments(bundle);
 
         fragmentTransaction.add(R.id.fragment, recyclerMovieFragment, RecyclerMovieFragment.TAG);
