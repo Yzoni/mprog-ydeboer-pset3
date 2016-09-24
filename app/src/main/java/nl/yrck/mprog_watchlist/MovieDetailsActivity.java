@@ -1,6 +1,7 @@
 package nl.yrck.mprog_watchlist;
 
 import android.app.FragmentTransaction;
+import android.os.Build;
 import android.os.Bundle;
 import android.app.FragmentManager;
 import android.support.design.widget.FloatingActionButton;
@@ -10,6 +11,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -60,6 +62,9 @@ public class MovieDetailsActivity extends AppCompatActivity
 
         showPlot = (Button) findViewById(R.id.show_plot);
         showPlot.setOnClickListener(this);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            poster.setTransitionName("TRANS");
+        }
 
         getSupportLoaderManager().initLoader(0, getIntent().getExtras(), this);
     }
@@ -67,6 +72,26 @@ public class MovieDetailsActivity extends AppCompatActivity
     private void saveMovie(String imdbId) {
         MovieIdSave movieIdSave = new MovieIdSharedPreference(this);
         movieIdSave.saveMovieId(imdbId);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.show_plot:
+                Log.d("ssj", "kskks");
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    finishAfterTransition();
+                }
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -83,14 +108,6 @@ public class MovieDetailsActivity extends AppCompatActivity
         year.setText(data.getYear());
         genre.setText(data.getGenre());
 
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.show_plot:
-                Log.d("ssj", "kskks");
-        }
     }
 
     @Override

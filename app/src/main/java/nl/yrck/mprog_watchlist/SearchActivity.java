@@ -89,15 +89,25 @@ public class SearchActivity extends AppCompatActivity implements LoaderManager.L
 
     @Override
     public Loader<MovieSearchResult> onCreateLoader(int id, Bundle args) {
+        runOnUiThread(() -> {
+                getFragmentManager().executePendingTransactions();
+                RecyclerMovieFragment recyclerMovieFragment = (RecyclerMovieFragment) getFragmentManager()
+                        .findFragmentByTag(RecyclerMovieFragment.TAG);
+                if (recyclerMovieFragment != null) {
+                    recyclerMovieFragment.showProgressbar();
+                }
+        });
         String searchQuery = args.getString("SEARCH_QUERY");
         return new SearchLoader(this, searchQuery);
     }
 
     @Override
     public void onLoadFinished(Loader<MovieSearchResult> loader, MovieSearchResult data) {
+        RecyclerMovieFragment recyclerMovieFragment = (RecyclerMovieFragment) getFragmentManager()
+                .findFragmentByTag(RecyclerMovieFragment.TAG);
+        recyclerMovieFragment.hideProgressbar();
+
         if (data.response()) {
-            RecyclerMovieFragment recyclerMovieFragment = (RecyclerMovieFragment) getFragmentManager()
-                    .findFragmentByTag(RecyclerMovieFragment.TAG);
             recyclerMovieFragment.refreshData(data.getMovies());
         } else {
             showError(data.getError());

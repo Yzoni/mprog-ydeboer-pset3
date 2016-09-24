@@ -36,28 +36,40 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener((View view) -> startSearchActivity());
 
-        ArrayList<Movie> movies = new ArrayList<>();
 
+        initFragment();
+
+        getMovies();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    private void initFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         RecyclerMovieFragment recyclerMovieFragment = new RecyclerMovieFragment();
+
+        ArrayList<Movie> movies = new ArrayList<>();
         Bundle bundle = new Bundle();
         bundle.putParcelableArrayList("MOVIES", movies);
+        bundle.putBoolean("SHOW_PROGRESSBAR", true);
         recyclerMovieFragment.setArguments(bundle);
+
         fragmentTransaction.add(R.id.fragment, recyclerMovieFragment, RecyclerMovieFragment.TAG);
         fragmentTransaction.commit();
-
-        getMovies();
     }
 
     private void getMovies() {
         MovieIdSave movieIdSave = new MovieIdSharedPreference(this);
         Set<String> set = movieIdSave.getMovieIds();
-        Log.d("MAIN movies set saved", "size " + set.size());
         String[] movie_ids = set.toArray(new String[set.size()]);
-        Log.d("movies saved", "length " + movie_ids.length);
+
         Bundle bundle = new Bundle();
         bundle.putStringArray("MOVIE_ID_S", movie_ids);
+
         getSupportLoaderManager().restartLoader(0, bundle, this);
     }
 
@@ -106,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<List<Movie>> loader, List<Movie> data) {
         RecyclerMovieFragment recyclerMovieFragment = (RecyclerMovieFragment) getFragmentManager()
                 .findFragmentByTag(RecyclerMovieFragment.TAG);
+        recyclerMovieFragment.hideProgressbar();
         recyclerMovieFragment.refreshData(data);
     }
 
