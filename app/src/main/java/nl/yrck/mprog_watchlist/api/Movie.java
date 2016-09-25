@@ -10,6 +10,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Movie implements Parcelable {
+    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel in) {
+            return new Movie(in);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
     private String title;
     private String year;
     private String imdbID;
@@ -30,17 +41,13 @@ public class Movie implements Parcelable {
         this.poster = poster;
     }
 
-    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
-        @Override
-        public Movie createFromParcel(Parcel in) {
-            return new Movie(in);
-        }
-
-        @Override
-        public Movie[] newArray(int size) {
-            return new Movie[size];
-        }
-    };
+    public Movie(Parcel parcel) {
+        title = parcel.readString();
+        year = parcel.readString();
+        imdbID = parcel.readString();
+        type = parcel.readString();
+        poster = parcel.readString();
+    }
 
     public String getTitle() {
         return title;
@@ -62,13 +69,8 @@ public class Movie implements Parcelable {
         return poster;
     }
 
-
-    public Movie(Parcel parcel) {
-        title = parcel.readString();
-        year = parcel.readString();
-        imdbID = parcel.readString();
-        type = parcel.readString();
-        poster = parcel.readString();
+    public String getType() {
+        return type;
     }
 
     @Override

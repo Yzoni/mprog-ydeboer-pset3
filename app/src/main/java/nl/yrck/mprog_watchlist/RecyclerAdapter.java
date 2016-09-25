@@ -1,7 +1,6 @@
 package nl.yrck.mprog_watchlist;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,9 +16,9 @@ import nl.yrck.mprog_watchlist.api.Movie;
 
 
 class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
+    private static ClickListener clickListener;
     private List<Movie> movies;
     private Context context;
-    private static ClickListener clickListener;
 
     // Provide a suitable constructor (depends on the kind of dataset)
     RecyclerAdapter(List<Movie> myDataset, Context myContext) {
@@ -27,58 +26,32 @@ class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
         context = myContext;
     }
 
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
-    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        // each data item is just a string in this case
-        ImageView cardPoster;
-        TextView cardTitle;
-        TextView cardYear;
-
-        ViewHolder(View v) {
-            super(v);
-            cardPoster = (ImageView) v.findViewById(R.id.card_poster);
-            cardTitle = (TextView) v.findViewById(R.id.card_title);
-            cardYear = (TextView) v.findViewById(R.id.card_year);
-
-            v.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-            clickListener.onItemClick(getAdapterPosition(), v);
-        }
-    }
-
     public void setOnItemClickListener(ClickListener clickListener) {
         RecyclerAdapter.clickListener = clickListener;
     }
 
-    // Create new views (invoked by the layout manager)
     @Override
     public RecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                          int viewType) {
-        // create a new view
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.recycler_item, parent, false);
-        // set the view's size, margins, paddings and layout parameters
 
         return new ViewHolder(v);
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        // - get element from your dataset at this position
-        // - replace the contents of the view with that element
 
         Movie movie = movies.get(position);
 
-        Picasso.with(context).load(movie.getPoster()).into(holder.cardPoster);
+        Picasso.with(context)
+                .load(movie.getPoster())
+                .placeholder(R.drawable.no_poster)
+                .into(holder.cardPoster);
 
         holder.cardTitle.setText(movie.getTitle());
         holder.cardYear.setText(movie.getYear());
+        holder.cardType.setText(movie.getType());
 
         holder.itemView.setTag(movie.getImdbID());
     }
@@ -91,5 +64,31 @@ class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
     public interface ClickListener {
         void onItemClick(int position, View v);
+    }
+
+    // Provide a reference to the views for each data item
+    // Complex data items may need more than one view per item, and
+    // you provide access to all the views for a data item in a view holder
+    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        // each data item is just a string in this case
+        ImageView cardPoster;
+        TextView cardTitle;
+        TextView cardYear;
+        TextView cardType;
+
+        ViewHolder(View v) {
+            super(v);
+            cardPoster = (ImageView) v.findViewById(R.id.card_poster);
+            cardTitle = (TextView) v.findViewById(R.id.card_title);
+            cardYear = (TextView) v.findViewById(R.id.card_year);
+            cardType = (TextView) v.findViewById(R.id.card_type);
+
+            v.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            clickListener.onItemClick(getAdapterPosition(), v);
+        }
     }
 }

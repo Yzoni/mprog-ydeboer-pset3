@@ -4,13 +4,15 @@ android {
     compileSdkVersion 24
     buildToolsVersion "24.0.2"
 
+
     defaultConfig {
         applicationId "nl.yrck.mprog_watchlist"
         minSdkVersion 15
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
-
+        renderscriptTargetApi 24
+        renderscriptSupportModeEnabled true
         jackOptions {
             enabled true
         }
@@ -43,6 +45,7 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.8.3'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.3'
+    compile 'at.favre.lib:dali:0.2'
     compile 'com.android.support:support-v4:24.2.1'
     testCompile 'junit:junit:4.12'
 }
