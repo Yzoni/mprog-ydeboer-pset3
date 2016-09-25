@@ -13,6 +13,7 @@ android {
         versionName "1.0"
         renderscriptTargetApi 24
         renderscriptSupportModeEnabled true
+        vectorDrawables.useSupportLibrary true
         jackOptions {
             enabled true
         }
