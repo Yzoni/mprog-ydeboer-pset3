@@ -4,18 +4,18 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import java.util.ArrayList;
 
@@ -26,6 +26,8 @@ import nl.yrck.mprog_watchlist.loaders.SearchLoader;
 public class SearchActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieSearchResult> {
 
     ArrayList<Movie> movies;
+    SearchView searchView;
+    Boolean savedInstance = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,7 @@ public class SearchActivity extends AppCompatActivity implements LoaderManager.L
 
         if (savedInstanceState != null) {
             movies = savedInstanceState.getParcelableArrayList("MOVIES");
+            savedInstance = savedInstanceState.getBoolean("SAVED_INSTANCE");
             initFragment(false);
         } else {
             movies = new ArrayList<>();
@@ -61,6 +64,8 @@ public class SearchActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putParcelableArrayList("MOVIES", movies);
+        outState.putBoolean("SAVED_INSTANCE", true);
+
         super.onSaveInstanceState(outState);
     }
 
@@ -92,26 +97,29 @@ public class SearchActivity extends AppCompatActivity implements LoaderManager.L
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_search, menu);
+        getMenuInflater().inflate(R.menu.menu_search, menu);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconified(false);
-        searchView.clearFocus();
-        searchView.onActionViewExpanded();
+
+        MenuItem searchMenu = menu.findItem(R.id.action_search);
+
+        if (!savedInstance) {
+            MenuItemCompat.expandActionView(searchMenu);
+        }
+
         return true;
     }
 
     @Override
     public Loader<MovieSearchResult> onCreateLoader(int id, Bundle args) {
         runOnUiThread(() -> {
-                getFragmentManager().executePendingTransactions();
-                RecyclerMovieFragment recyclerMovieFragment = (RecyclerMovieFragment) getFragmentManager()
-                        .findFragmentByTag(RecyclerMovieFragment.TAG);
-                if (recyclerMovieFragment != null) {
-                    recyclerMovieFragment.showProgressbar();
-                }
+            getFragmentManager().executePendingTransactions();
+            RecyclerMovieFragment recyclerMovieFragment = (RecyclerMovieFragment) getFragmentManager()
+                    .findFragmentByTag(RecyclerMovieFragment.TAG);
+            if (recyclerMovieFragment != null) {
+                recyclerMovieFragment.showProgressbar();
+            }
         });
         String searchQuery = args.getString("SEARCH_QUERY");
         return new SearchLoader(this, searchQuery);
