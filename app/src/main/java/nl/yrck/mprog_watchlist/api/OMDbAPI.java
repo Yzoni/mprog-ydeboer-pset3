@@ -1,17 +1,13 @@
 package nl.yrck.mprog_watchlist.api;
 
-import android.util.JsonReader;
+import android.net.Uri;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class OMDbAPI {
@@ -24,12 +20,10 @@ public class OMDbAPI {
 
     public MovieSearchResult Search(String query, String type, String year) {
         try {
-            URL url = new URL(buildSearchUrl(query, type, year));
+            URL url = buildSearchUrl(query, type, year);
             Log.d("Opening url", url.toString());
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(url, MovieSearchResult.class);
-        } catch (MalformedURLException e) {
-            System.err.println(e);
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -42,8 +36,6 @@ public class OMDbAPI {
             Log.d("Opening url", url.toString());
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(url, Movie.class);
-        } catch (MalformedURLException e) {
-            System.err.println(e);
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -56,27 +48,31 @@ public class OMDbAPI {
             Log.d("Opening url", url.toString());
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(url, MovieFull.class);
-        } catch (MalformedURLException e) {
-            System.err.println(e);
         } catch (IOException e) {
             System.err.println(e);
         }
         return null;
     }
 
-    private String buildSearchUrl(String query, String type, String year) {
-        String url = BASE_URL;
-
-        url += "?s=" + query;
+    private URL buildSearchUrl(String query, String type, String year)
+            throws MalformedURLException {
+        Uri uri = Uri.parse(BASE_URL)
+                .buildUpon()
+                .appendQueryParameter("s", query)
+                .build();
 
         if (type != null) {
-            url += "&type=" + type;
+            uri = uri.buildUpon()
+                    .appendQueryParameter("type", type)
+                    .build();
         }
 
         if (year != null) {
-            url += "&y=" + year;
+            uri = uri.buildUpon()
+                    .appendQueryParameter("y", year)
+                    .build();
         }
 
-        return url;
+        return new URL(uri.toString());
     }
 }

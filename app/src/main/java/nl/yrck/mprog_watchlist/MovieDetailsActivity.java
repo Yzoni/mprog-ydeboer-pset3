@@ -189,6 +189,7 @@ public class MovieDetailsActivity extends AppCompatActivity
             }
         };
 
+        // Only reload when not shared by previous activity
         Picasso.with(this).load(data.getPoster()).into(target);
 
         plotText = data.getPlot();

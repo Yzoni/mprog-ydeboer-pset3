@@ -43,14 +43,14 @@ public class SearchActivity extends AppCompatActivity implements LoaderManager.L
         if (savedInstanceState != null) {
             movies = savedInstanceState.getParcelableArrayList("MOVIES");
             savedInstance = savedInstanceState.getBoolean("SAVED_INSTANCE");
-            initFragment(false);
+            initFragment();
         } else {
             movies = new ArrayList<>();
-            initFragment(true);
+            initFragment();
         }
     }
 
-    private void initFragment(boolean progressbar) {
+    private void initFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         RecyclerMovieFragment recyclerMovieFragment = new RecyclerMovieFragment();
